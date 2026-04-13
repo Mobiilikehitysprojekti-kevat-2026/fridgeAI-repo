@@ -1,0 +1,4 @@
+export PATH=$PATH:/opt/homebrew/bin && npm run backend:start
+
+
+export PATH=$PATH:/opt/homebrew/bin && npx expo start
