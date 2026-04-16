@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 
+import { statsRepository } from '../repositories/StatsRepository';
 import type { Locale, RecipeDTO } from '../types/api';
 
 type CookingStatus = 'idle' | 'cooking' | 'paused' | 'completed';
@@ -44,9 +45,15 @@ export const useCookingSessionStore = create<CookingSessionState>((set) => ({
         state.recipe.steps.length - 1,
       );
 
+      const isCompleted = nextIndex === state.recipe.steps.length - 1;
+
+      if (isCompleted && state.status !== 'completed' && state.recipe.nutritionEstimate) {
+        statsRepository.saveMealCalories(state.recipe.nutritionEstimate.calories);
+      }
+
       return {
         currentStepIndex: nextIndex,
-        status: nextIndex === state.recipe.steps.length - 1 ? 'completed' : 'cooking',
+        status: isCompleted ? 'completed' : 'cooking',
       };
     }),
   prevStep: () =>
