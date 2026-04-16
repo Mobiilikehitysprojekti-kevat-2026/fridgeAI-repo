@@ -11,7 +11,7 @@ Use it like this:
 
 This list follows:
 
-- the `src/` split in [SRC_FOLDER_SPLIT_3_PERSON.md](/Users/dogan/Desktop/mobiili-projekti-full%20kopyası/docs/SRC_FOLDER_SPLIT_3_PERSON.md)
+- the `src/` split in [SRC_FOLDER_SPLIT_3_PERSON.md](/Users/dogan/Desktop/fridgeAI-repo/docs/SRC_FOLDER_SPLIT_3_PERSON.md)
 - a 6 week Scrum plan
 - 3 people working in parallel
 
