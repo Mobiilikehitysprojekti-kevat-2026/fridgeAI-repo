@@ -32,16 +32,32 @@ type ScreenProps = NativeStackScreenProps<RootStackParamList, 'AnalysisStatistic
 
 function getCalorieTrendData(history: CalorieRecord[]) {
   // Use last 7 items or mock if empty
-  const baseData = history.length >= 2 
+  const hasEnoughData = history.length >= 2;
+  const baseData = hasEnoughData 
     ? [...history].reverse().slice(-7)
-    : [{ calories: 1800, date: '' }, { calories: 2100, date: '' }, { calories: 1950, date: '' }, { calories: 2000, date: '' }, { calories: 2400, date: '' }, { calories: 2300, date: '' }, { calories: 2200, date: '' }];
+    : [
+        { calories: 1800, date: '' }, { calories: 2100, date: '' }, 
+        { calories: 1950, date: '' }, { calories: 2000, date: '' }, 
+        { calories: 2400, date: '' }, { calories: 2300, date: '' }, 
+        { calories: 2200, date: '' }
+      ];
 
   const rawData = baseData.map(d => d.calories);
   const points = rawData.map((val, idx) => [idx, val]);
   
-  const regressionResult = linearRegression(points);
-  const findLineY = linearRegressionLine(regressionResult);
-  const trendLine = rawData.map((_, idx) => findLineY(idx));
+  let equation = 'y = 0x + 0';
+  let trendLine = rawData;
+
+  try {
+    if (points.length >= 2) {
+      const regressionResult = linearRegression(points);
+      const findLineY = linearRegressionLine(regressionResult);
+      trendLine = rawData.map((_, idx) => findLineY(idx));
+      equation = `y = ${regressionResult.m.toFixed(2)}x + ${regressionResult.b.toFixed(2)}`;
+    }
+  } catch (e) {
+    console.warn('Regression calculation failed', e);
+  }
   
   return {
     labels: baseData.map((_, i) => i === baseData.length - 1 ? 'Today' : `T-${baseData.length - 1 - i}`),
@@ -58,8 +74,8 @@ function getCalorieTrendData(history: CalorieRecord[]) {
         strokeWidth: 2,
       }
     ],
-    equation: `y = ${regressionResult.m.toFixed(2)}x + ${regressionResult.b.toFixed(2)}`,
-    isMock: history.length < 2
+    equation,
+    isMock: !hasEnoughData
   };
 }
 
@@ -75,7 +91,14 @@ function getPrepTimeVsDifficultyData(recipes: RecipeDTO[]) {
 
   const getAvg = (diff: string) => {
     const times = difficultyMap[diff];
-    return times.length > 0 ? mean(times) : (diff === 'easy' ? 15 : diff === 'medium' ? 35 : 75);
+    if (times.length > 0) {
+      try {
+        return mean(times);
+      } catch {
+        return diff === 'easy' ? 15 : diff === 'medium' ? 35 : 75;
+      }
+    }
+    return diff === 'easy' ? 15 : diff === 'medium' ? 35 : 75;
   };
 
   return {
@@ -90,18 +113,25 @@ function getPrepTimeVsDifficultyData(recipes: RecipeDTO[]) {
 }
 
 function getConfidenceData(history: ConfidenceRecord[]) {
-  const baseData = history.length >= 2
+  const hasEnoughData = history.length >= 2;
+  const baseData = hasEnoughData
     ? [...history].reverse().slice(-6)
-    : [{ confidence: 0.65 }, { confidence: 0.70 }, { confidence: 0.85 }, { confidence: 0.82 }, { confidence: 0.90 }, { confidence: 0.95 }];
+    : [{ confidence: 0.65 }, { confidence: 0.70 }, { confidence: 0.85 }, { confidence: 0.82 }, { confidence: 0.90 }, { confidence: 1.0 }];
 
   const scores = baseData.map(d => d.confidence);
-  const avg = mean(scores);
+  let avg = 0.85;
+
+  try {
+    avg = scores.length > 0 ? mean(scores) : 0.85;
+  } catch (e) {
+    console.warn('Mean calculation failed', e);
+  }
   
   return {
     labels: baseData.map((_, i) => (i + 1).toString()),
     datasets: [{ data: scores.map(s => s * 100) }],
     average: avg * 100,
-    isMock: history.length < 2
+    isMock: !hasEnoughData
   };
 }
 
@@ -116,14 +146,18 @@ export function AnalysisStatisticsScreen({ navigation }: ScreenProps) {
 
   useEffect(() => {
     const loadData = async () => {
-      const [cal, conf, recipes] = await Promise.all([
-        statsRepository.getCalorieHistory(),
-        statsRepository.getConfidenceHistory(),
-        recipeRepository.findAll()
-      ]);
-      setCalorieHistory(cal);
-      setConfidenceHistory(conf);
-      setSavedRecipes(recipes);
+      try {
+        const [cal, conf, recipes] = await Promise.all([
+          statsRepository.getCalorieHistory(),
+          statsRepository.getConfidenceHistory(),
+          recipeRepository.findAll()
+        ]);
+        setCalorieHistory(cal);
+        setConfidenceHistory(conf);
+        setSavedRecipes(recipes);
+      } catch (e) {
+        console.error('Failed to load stats data', e);
+      }
     };
     loadData();
   }, []);
@@ -135,8 +169,9 @@ export function AnalysisStatisticsScreen({ navigation }: ScreenProps) {
   }, {} as Record<string, number>);
   
   // Mock if empty
+  const hasPantryData = Object.keys(categoryCounts).length > 0;
   const defaultCategories = { vegetable: 4, protein: 2, dairy: 1, fruit: 3 };
-  const finalCategories = Object.keys(categoryCounts).length > 0 ? categoryCounts : defaultCategories;
+  const finalCategories = hasPantryData ? categoryCounts : defaultCategories;
   
   const pieData = Object.entries(finalCategories).map(([name, population], index) => {
     const colors = ['#A4DB66', '#FF9F40', '#FF6384', '#36A2EB', '#9966FF'];
@@ -150,8 +185,19 @@ export function AnalysisStatisticsScreen({ navigation }: ScreenProps) {
   });
 
   const populations = Object.values(finalCategories);
-  const categoryMean = populations.length > 0 ? mean(populations).toFixed(1) : '0';
-  const categoryStdDev = populations.length > 0 ? standardDeviation(populations).toFixed(1) : '0';
+  let categoryMean = '0';
+  let categoryStdDev = '0';
+
+  try {
+    if (populations.length > 0) {
+      categoryMean = mean(populations).toFixed(1);
+      // Standard deviation requires at least one element for population SD in some libs, 
+      // but simple-statistics needs 2 or more for variance/sample SD.
+      categoryStdDev = populations.length >= 2 ? standardDeviation(populations).toFixed(1) : '0';
+    }
+  } catch (e) {
+    console.warn('Stat calculations failed', e);
+  }
 
   // Include current latest analysis in prep time calculation if available
   const allKnownRecipes = latestAnalysis ? [...savedRecipes, latestAnalysis.suggestedRecipe] : savedRecipes;
