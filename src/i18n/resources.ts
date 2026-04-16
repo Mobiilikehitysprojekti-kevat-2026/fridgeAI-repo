@@ -156,6 +156,7 @@ export const resources = {
             prepTimeVsDifficultyDesc: 'Exponential relationship between recipe difficulty and total time.',
             confidenceScores: 'AI Confidence Scores',
             confidenceScoresDesc: 'Moving average model of scan accuracy distributions.',
+            viewRecipe: 'View Recipe',
         },
     },
     fi: {
@@ -317,6 +318,7 @@ export const resources = {
             prepTimeVsDifficultyDesc: 'Eksponentiaalinen suhde vaikeuden ja keston valilla.',
             confidenceScores: 'Tekoalyn varmuuspisteet',
             confidenceScoresDesc: 'Liukuva keskiarvomalli skannaustarkkuuden jakaumasta.',
+            viewRecipe: 'Katso resepti',
         },
     },
 } as const;
