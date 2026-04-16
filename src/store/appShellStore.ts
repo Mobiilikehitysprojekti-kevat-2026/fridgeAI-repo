@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 
+import { statsRepository } from '../repositories/StatsRepository';
 import type { AnalyzeResponse, IngredientDTO } from '../types/api';
 
 function normalizePantryIngredient(ingredient: IngredientDTO, index: number): IngredientDTO {
@@ -27,12 +28,21 @@ export const useAppShellStore = create<AppShellState>((set) => ({
   pantryIngredients: [],
   sourceImageUri: null,
   selectedIngredients: [],
-  setLatestAnalysis: (analysis, sourceImageUri) =>
+  setLatestAnalysis: (analysis, sourceImageUri) => {
+    // Log confidence for stats
+    if (analysis.detectedIngredients.length > 0) {
+      const avgConfidence =
+        analysis.detectedIngredients.reduce((acc, curr) => acc + curr.confidence, 0) /
+        analysis.detectedIngredients.length;
+      statsRepository.saveScanConfidence(avgConfidence);
+    }
+
     set(() => ({
       latestAnalysis: analysis,
       selectedIngredients: analysis.detectedIngredients,
       sourceImageUri,
-    })),
+    }));
+  },
   setPantryIngredients: (ingredients) =>
     set(() => ({
       pantryIngredients: ingredients.map(normalizePantryIngredient),
