@@ -126,3 +126,13 @@ export interface SavedRecipeRecord {
   recipe: RecipeDTO;
   savedAt: string;
 }
+
+export interface CalorieRecord {
+  date: string;
+  calories: number;
+}
+
+export interface ConfidenceRecord {
+  date: string;
+  confidence: number;
+}
