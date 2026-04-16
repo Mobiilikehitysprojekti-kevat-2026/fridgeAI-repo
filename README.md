@@ -1,33 +1,14 @@
-# FridgeAI — Smart Fridge & Recipe Assistant
+# FridgeAI 🧊
 
-> Scan your fridge, discover recipes, and cook step-by-step with AI. Built with React Native (Expo) + Express.
+**FridgeAI** is a smart mobile app that helps you manage your fridge and figure out what to cook. You just take a photo of your ingredients, and the app uses AI to suggest recipes you can actually make with what you have.
 
----
+Highlights:
+- **Scan your fridge**: Instantly detect ingredients using GPT-4o.
+- **Recipe Guide**: Step-by-step cooking with voice guidance.
+- **Pantry Tracking**: Keep track of what you have so nothing goes to waste.
+- **Stats & Insights**: Real math models to track your nutrition and AI accuracy.
 
-## Table of Contents
-
-- [Overview](#overview)
-- [Features](#features)
-- [Architecture](#architecture)
-- [Tech Stack](#tech-stack)
-- [Project Structure](#project-structure)
-- [Prerequisites](#prerequisites)
-- [Getting Started](#getting-started)
-- [Environment Variables](#environment-variables)
-- [Running the App](#running-the-app)
-- [API Reference](#api-reference)
-- [State Management](#state-management)
-- [Internationalisation](#internationalisation)
-- [Testing](#testing)
-- [Scripts](#scripts)
-
----
-
-## Overview
-
-FridgeAI is a cross-platform mobile application that lets you photograph the contents of your fridge and instantly receive AI-generated recipe suggestions tailored to what you already have. The app guides you through every cooking step hands-free, tracks your pantry inventory, and curates a daily recipe catalogue.
-
----
+Built with **React Native (Expo)** on the front end and **Express** on the back end.
 
 ## Features
 
@@ -167,7 +148,7 @@ The mobile app and backend live in the **same repository**. The backend is a thi
 
 ```bash
 git clone <repo-url>
-cd mobiili-projekti-full
+cd fridgeAI-repo
 npm install
 ```
 
